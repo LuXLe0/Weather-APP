@@ -3,70 +3,128 @@
 }
 
 body {
-  background: linear-gradient(135deg, #00b4db, #0083b0);
+  background: linear-gradient(120deg, #2193b0, #6dd5ed);
   min-height: 100vh;
   margin: 0;
   padding: 20px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .MuiContainer-root {
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
-/* Custom scrollbar for hourly forecast */
+.weather-card {
+  background: linear-gradient(to right bottom, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: transform 0.2s ease-in-out;
+}
+
+.weather-card:hover {
+  transform: translateY(-5px);
+}
+
+.hourly-forecast-item {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(5px);
+  border-radius: 12px;
+  padding: 12px;
+  transition: transform 0.2s ease;
+}
+
+.hourly-forecast-item:hover {
+  transform: scale(1.05);
+}
+
+.daily-forecast-item {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(5px);
+  border-radius: 16px;
+  transition: transform 0.2s ease;
+}
+
+.daily-forecast-item:hover {
+  transform: translateY(-5px);
+}
+
+.search-container {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 50px;
+  padding: 5px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.search-input {
+  background: transparent !important;
+  border-radius: 50px !important;
+}
+
+.search-button {
+  border-radius: 50px !important;
+  padding: 10px 25px !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  margin-left: 8px !important;
+}
+
+/* Custom scrollbar */
 *::-webkit-scrollbar {
   height: 8px;
   width: 8px;
 }
 
 *::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 10px;
 }
 
 *::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* Weather icon animations */
+.weather-icon {
+  animation: float 3s ease-in-out infinite;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0px);
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+/* Temperature unit toggle */
+.unit-toggle {
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.unit-toggle:hover {
+  opacity: 1;
 }

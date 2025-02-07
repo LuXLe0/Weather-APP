@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Container, 
   TextField, 
@@ -11,8 +11,11 @@ import {
   FormControlLabel,
   Box,
   Grid,
-  Divider
+  IconButton,
+  Fade
 } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import axios from 'axios';
 import './App.css';
 
@@ -41,7 +44,6 @@ function App() {
     setError(null);
 
     try {
-      // First, get coordinates from city name
       const geoUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${API_KEY}`;
       const geoResponse = await axios.get(geoUrl);
       
@@ -51,12 +53,10 @@ function App() {
 
       const { lat, lon } = geoResponse.data[0];
 
-      // Get current weather
       const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
       const weatherResponse = await axios.get(weatherUrl);
       setWeatherData(weatherResponse.data);
 
-      // Get forecast data (includes hourly and daily)
       const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
       const forecastResponse = await axios.get(forecastUrl);
       setForecastData(forecastResponse.data);
@@ -92,167 +92,238 @@ function App() {
     });
   };
 
+  const getWeatherIcon = (iconCode) => {
+    return `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom align="center">
-        Weather App
-      </Typography>
+      <Fade in={true} timeout={800}>
+        <Box>
+          <Typography 
+            variant="h3" 
+            component="h1" 
+            gutterBottom 
+            align="center"
+            sx={{ 
+              mb: 4, 
+              fontWeight: 600,
+              background: 'linear-gradient(45deg, #2193b0, #6dd5ed)',
+              backgroundClip: 'text',
+              textFillColor: 'transparent',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '12px'
+            }}
+          >
+            <WbSunnyIcon sx={{ fontSize: 40 }} />
+            Weather Forecast
+          </Typography>
 
-      <Box sx={{ mb: 3, display: 'flex', gap: 1 }}>
-        <TextField
-          fullWidth
-          label="Enter city name"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && fetchWeather()}
-        />
-        <Button 
-          variant="contained" 
-          onClick={fetchWeather}
-          disabled={loading}
-        >
-          Search
-        </Button>
-      </Box>
+          <Box className="search-container">
+            <TextField
+              fullWidth
+              placeholder="Enter city name..."
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && fetchWeather()}
+              variant="standard"
+              InputProps={{
+                disableUnderline: true,
+                className: 'search-input'
+              }}
+              sx={{ ml: 2 }}
+            />
+            <Button 
+              variant="contained" 
+              onClick={fetchWeather}
+              disabled={loading}
+              className="search-button"
+              startIcon={<SearchIcon />}
+              sx={{
+                background: 'linear-gradient(45deg, #2193b0, #6dd5ed)',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #1c7a94, #5bc0db)'
+                }
+              }}
+            >
+              Search
+            </Button>
+          </Box>
 
-      <FormControlLabel
-        control={
-          <Switch
-            checked={useCelsius}
-            onChange={() => setUseCelsius(!useCelsius)}
+          <FormControlLabel
+            control={
+              <Switch
+                checked={useCelsius}
+                onChange={() => setUseCelsius(!useCelsius)}
+                className="unit-toggle"
+              />
+            }
+            label={useCelsius ? "Celsius" : "Fahrenheit"}
+            sx={{ mb: 2 }}
           />
-        }
-        label={useCelsius ? "Celsius" : "Fahrenheit"}
-      />
 
-      {loading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-          <CircularProgress />
-        </Box>
-      )}
+          {loading && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <CircularProgress sx={{ color: '#2193b0' }} />
+            </Box>
+          )}
 
-      {error && (
-        <Typography color="error" sx={{ mt: 2 }}>
-          {error}
-        </Typography>
-      )}
+          {error && (
+            <Typography color="error" sx={{ mt: 2, textAlign: 'center' }}>
+              {error}
+            </Typography>
+          )}
 
-      {weatherData && (
-        <>
-          <Card sx={{ mt: 2 }}>
-            <CardContent>
-              <Typography variant="h5" component="h2">
-                {weatherData.name}, {weatherData.sys.country}
-              </Typography>
-              <Typography variant="h3" component="p" sx={{ my: 2 }}>
-                {convertTemp(weatherData.main.temp)}
-              </Typography>
-              <Typography variant="subtitle1">
-                Feels like: {convertTemp(weatherData.main.feels_like)}
-              </Typography>
-              <Typography variant="body1">
-                {weatherData.weather[0].description.charAt(0).toUpperCase() + 
-                 weatherData.weather[0].description.slice(1)}
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="body2">
-                  Humidity: {weatherData.main.humidity}%
-                </Typography>
-                <Typography variant="body2">
-                  Wind Speed: {weatherData.wind.speed} m/s
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-
-          {forecastData && (
-            <>
-              {/* Hourly Forecast */}
-              <Card sx={{ mt: 3 }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    48-Hour Forecast
-                  </Typography>
-                  <Box sx={{ display: 'flex', overflowX: 'auto', pb: 2 }}>
-                    {forecastData.list.slice(0, 16).map((hour, index) => (
-                      <Box
-                        key={hour.dt}
-                        sx={{
-                          minWidth: 100,
-                          textAlign: 'center',
-                          mr: 2,
-                          borderRight: index !== 15 ? '1px solid #eee' : 'none',
-                          pr: 2
-                        }}
-                      >
-                        <Typography variant="body2">
-                          {formatTime(hour.dt)}
+          {weatherData && (
+            <Fade in={true} timeout={500}>
+              <Box>
+                <Card className="weather-card" sx={{ mb: 3 }}>
+                  <CardContent>
+                    <Typography variant="h4" component="h2" gutterBottom>
+                      {weatherData.name}, {weatherData.sys.country}
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+                      <img
+                        src={getWeatherIcon(weatherData.weather[0].icon)}
+                        alt={weatherData.weather[0].description}
+                        className="weather-icon"
+                        style={{ width: 100, height: 100 }}
+                      />
+                      <Typography variant="h2" component="p" sx={{ ml: 2 }}>
+                        {convertTemp(weatherData.main.temp)}
+                      </Typography>
+                    </Box>
+                    <Typography variant="h6" sx={{ mb: 2 }}>
+                      {weatherData.weather[0].description.charAt(0).toUpperCase() + 
+                       weatherData.weather[0].description.slice(1)}
+                    </Typography>
+                    <Grid container spacing={2} sx={{ mt: 2 }}>
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="body2" color="text.secondary">
+                          Feels like
                         </Typography>
                         <Typography variant="h6">
-                          {convertTemp(hour.main.temp)}
+                          {convertTemp(weatherData.main.feels_like)}
                         </Typography>
-                        <img
-                          src={`https://openweathermap.org/img/wn/${hour.weather[0].icon}.png`}
-                          alt={hour.weather[0].description}
-                        />
-                        <Typography variant="body2">
-                          {hour.weather[0].main}
+                      </Grid>
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="body2" color="text.secondary">
+                          Humidity
                         </Typography>
-                      </Box>
-                    ))}
-                  </Box>
-                </CardContent>
-              </Card>
+                        <Typography variant="h6">
+                          {weatherData.main.humidity}%
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="body2" color="text.secondary">
+                          Wind Speed
+                        </Typography>
+                        <Typography variant="h6">
+                          {weatherData.wind.speed} m/s
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="body2" color="text.secondary">
+                          Pressure
+                        </Typography>
+                        <Typography variant="h6">
+                          {weatherData.main.pressure} hPa
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                </Card>
 
-              {/* 5-Day Forecast */}
-              <Card sx={{ mt: 3 }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    5-Day Forecast
-                  </Typography>
-                  <Grid container spacing={2}>
-                    {forecastData.list
-                      .filter((item, index) => index % 8 === 0)
-                      .slice(0, 5)
-                      .map((day) => (
-                        <Grid item xs={12} sm={6} md={2.4} key={day.dt}>
-                          <Box
-                            sx={{
-                              textAlign: 'center',
-                              p: 2,
-                              border: '1px solid #eee',
-                              borderRadius: 1
-                            }}
-                          >
-                            <Typography variant="subtitle1">
-                              {formatDate(day.dt)}
-                            </Typography>
-                            <img
-                              src={`https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`}
-                              alt={day.weather[0].description}
-                            />
-                            <Typography variant="h6">
-                              {convertTemp(day.main.temp)}
-                            </Typography>
-                            <Typography variant="body2">
-                              {day.weather[0].main}
-                            </Typography>
-                            <Typography variant="body2">
-                              H: {convertTemp(day.main.temp_max)}
-                            </Typography>
-                            <Typography variant="body2">
-                              L: {convertTemp(day.main.temp_min)}
-                            </Typography>
-                          </Box>
+                {forecastData && (
+                  <>
+                    <Card sx={{ mb: 3 }}>
+                      <CardContent>
+                        <Typography variant="h6" gutterBottom>
+                          48-Hour Forecast
+                        </Typography>
+                        <Box sx={{ display: 'flex', overflowX: 'auto', pb: 2 }}>
+                          {forecastData.list.slice(0, 16).map((hour, index) => (
+                            <Box
+                              key={hour.dt}
+                              className="hourly-forecast-item"
+                              sx={{
+                                minWidth: 120,
+                                mr: 2
+                              }}
+                            >
+                              <Typography variant="body2" color="text.secondary">
+                                {formatTime(hour.dt)}
+                              </Typography>
+                              <img
+                                src={getWeatherIcon(hour.weather[0].icon)}
+                                alt={hour.weather[0].description}
+                                className="weather-icon"
+                                style={{ width: 50, height: 50 }}
+                              />
+                              <Typography variant="h6">
+                                {convertTemp(hour.main.temp)}
+                              </Typography>
+                              <Typography variant="body2">
+                                {hour.weather[0].main}
+                              </Typography>
+                            </Box>
+                          ))}
+                        </Box>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardContent>
+                        <Typography variant="h6" gutterBottom>
+                          5-Day Forecast
+                        </Typography>
+                        <Grid container spacing={2}>
+                          {forecastData.list
+                            .filter((item, index) => index % 8 === 0)
+                            .slice(0, 5)
+                            .map((day) => (
+                              <Grid item xs={12} sm={6} md={2.4} key={day.dt}>
+                                <Box className="daily-forecast-item" sx={{ p: 2 }}>
+                                  <Typography variant="subtitle1" gutterBottom>
+                                    {formatDate(day.dt)}
+                                  </Typography>
+                                  <img
+                                    src={getWeatherIcon(day.weather[0].icon)}
+                                    alt={day.weather[0].description}
+                                    className="weather-icon"
+                                    style={{ width: 60, height: 60 }}
+                                  />
+                                  <Typography variant="h6">
+                                    {convertTemp(day.main.temp)}
+                                  </Typography>
+                                  <Typography variant="body2" color="text.secondary">
+                                    {day.weather[0].main}
+                                  </Typography>
+                                  <Box sx={{ mt: 1 }}>
+                                    <Typography variant="body2" color="primary">
+                                      H: {convertTemp(day.main.temp_max)}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                      L: {convertTemp(day.main.temp_min)}
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                              </Grid>
+                          ))}
                         </Grid>
-                    ))}
-                  </Grid>
-                </CardContent>
-              </Card>
-            </>
+                      </CardContent>
+                    </Card>
+                  </>
+                )}
+              </Box>
+            </Fade>
           )}
-        </>
-      )}
+        </Box>
+      </Fade>
     </Container>
   );
 }
